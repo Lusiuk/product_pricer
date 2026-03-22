@@ -1,0 +1,32 @@
+{
+  "categories": {
+    "electronics": {
+      "US": "0.00",
+      "EU": "0.20",
+      "RU": "0.20",
+      "UK": "0.20"
+    },
+    "food": {
+      "US": "0.00",
+      "EU": "0.05",
+      "RU": "0.10",
+      "UK": "0.05"
+    },
+    "clothing": {
+      "US": "0.00",
+      "EU": "0.20",
+      "RU": "0.18",
+      "UK": "0.20"
+    },
+    "books": {
+      "US": "0.00",
+      "EU": "0.05",
+      "RU": "0.10",
+      "UK": "0.00"
+    }
+  },
+  "rules": {
+    "tax_shipping": false,
+    "compound_tax": false
+  }
+}

@@ -5,8 +5,8 @@ require "ostruct"
 
 module ProductPricer
   class CalculationContext
-    attr_reader :product, :region, :promo_code, :quantity, :user_tier
-    attr_accessor :base_price, :delivery_cost, :weight_surcharge, :tax_amount, :discount_amount, :final_price
+    attr_reader :product, :region, :promo_code, :quantity
+    attr_accessor :base_price, :delivery_cost, :tax_amount, :discount_amount, :final_price
     attr_reader :applied_rules, :breakdown
 
     def initialize(product:, region:, promo_code: nil, quantity: 1, user_tier: nil)
@@ -14,11 +14,9 @@ module ProductPricer
       @region = region
       @promo_code = promo_code
       @quantity = quantity
-      @user_tier = user_tier
 
       @base_price = BigDecimal(@product.price.to_s) * quantity
       @delivery_cost = BigDecimal("0")
-      @weight_surcharge = BigDecimal("0")
       @tax_amount = BigDecimal("0")
       @discount_amount = BigDecimal("0")
       @final_price = @base_price
@@ -36,7 +34,6 @@ module ProductPricer
       {
         base_price: @base_price,
         delivery_cost: @delivery_cost,
-        weight_surcharge: @weight_surcharge,
         tax_amount: @tax_amount,
         discount_amount: @discount_amount,
         final_price: @final_price,

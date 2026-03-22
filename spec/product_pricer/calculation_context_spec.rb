@@ -21,10 +21,11 @@ RSpec.describe ProductPricer::CalculationContext do
       expect(context.product.price).to eq(50)
     end
 
-    it "initializes with user tier" do
-      context = described_class.new(product: product, region: "EU", user_tier: "gold")
+    it "initializes with default quantity of 1" do
+      context = described_class.new(product: product, region: "EU")
 
-      expect(context.user_tier).to eq("gold")
+      expect(context.quantity).to eq(1)
+      expect(context.base_price).to eq(BigDecimal("99.99"))
     end
   end
 

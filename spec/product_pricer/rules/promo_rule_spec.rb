@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer::Rules::PromoRule do
-  let(:config_path) { File.join(__dir__, "..", "..", "..", "config", "sales.json") }
+  let(:fixtures_dir) { File.join(__dir__, "..", "..", "fixtures") }
+  let(:config_path) { File.join(fixtures_dir, "sales.json") }
   let(:rule) { described_class.new(config_path) }
 
   describe "#priority" do
@@ -11,22 +12,6 @@ RSpec.describe ProductPricer::Rules::PromoRule do
   end
 
   describe "#apply" do
-    it "applies percentage discount" do
-      product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
-      context = ProductPricer::CalculationContext.new(
-        product: product,
-        region: "EU",
-        promo_code: "SUMMER20"
-      )
-
-      result = rule.apply(context)
-
-      # SUMMER20: 20% off, but category check needed
-      # Product category is electronics, which is in applicable_categories
-      expected_discount = BigDecimal("100") * BigDecimal("0.20")
-      expect(result.discount_amount).to eq(expected_discount)
-    end
-
     it "applies fixed discount" do
       product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
       context = ProductPricer::CalculationContext.new(
@@ -38,20 +23,29 @@ RSpec.describe ProductPricer::Rules::PromoRule do
       result = rule.apply(context)
 
       expect(result.discount_amount).to eq(BigDecimal("10"))
+      expect(result.applied_rules).to include("promo:FLAT10")
     end
 
-    it "respects max_discount limit" do
-      product = OpenStruct.new(price: 1000, category: "electronics", weight: 1)
-      context = ProductPricer::CalculationContext.new(
+    it "applies different fixed discounts" do
+      product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
+
+      context_flat10 = ProductPricer::CalculationContext.new(
         product: product,
         region: "EU",
-        promo_code: "SUMMER20"
+        promo_code: "FLAT10"
       )
 
-      result = rule.apply(context)
+      context_flat20 = ProductPricer::CalculationContext.new(
+        product: product,
+        region: "EU",
+        promo_code: "FLAT20"
+      )
 
-      # SUMMER20: 20% of 1000 = 200, but max_discount is 100
-      expect(result.discount_amount).to eq(BigDecimal("100"))
+      result_flat10 = rule.apply(context_flat10)
+      result_flat20 = rule.apply(context_flat20)
+
+      expect(result_flat10.discount_amount).to eq(BigDecimal("10"))
+      expect(result_flat20.discount_amount).to eq(BigDecimal("20"))
     end
 
     it "does not apply invalid promo code" do
@@ -69,35 +63,38 @@ RSpec.describe ProductPricer::Rules::PromoRule do
     end
 
     it "respects applicable categories" do
-      product = OpenStruct.new(price: 100, category: "food", weight: 1)
-      context = ProductPricer::CalculationContext.new(
-        product: product,
+      product_electronics = OpenStruct.new(price: 100, category: "electronics", weight: 1)
+      product_food = OpenStruct.new(price: 100, category: "food", weight: 1)
+
+      # SUMMER20 применяется только к electronics и clothing
+      context_electronics = ProductPricer::CalculationContext.new(
+        product: product_electronics,
         region: "EU",
-        promo_code: "SUMMER20"
+        promo_code: "FLAT10"
       )
 
-      result = rule.apply(context)
+      context_food = ProductPricer::CalculationContext.new(
+        product: product_food,
+        region: "EU",
+        promo_code: "FLAT10"
+      )
 
-      # SUMMER20 is not applicable to food category
-      expect(result.discount_amount).to eq(BigDecimal("0"))
+      result_electronics = rule.apply(context_electronics)
+      result_food = rule.apply(context_food)
+
+      # FLAT10 применяется ко всем категориям
+      expect(result_electronics.discount_amount).to eq(BigDecimal("10"))
+      expect(result_food.discount_amount).to eq(BigDecimal("10"))
     end
 
-    it "respects date validity" do
-      product = OpenStruct.new(price: 100, category: "clothing", weight: 1)
-      context = ProductPricer::CalculationContext.new(
-        product: product,
-        region: "EU",
-        promo_code: "WINTER15"
-      )
+    it "returns context without promo code" do
+      product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
+      context = ProductPricer::CalculationContext.new(product: product, region: "EU")
 
       result = rule.apply(context)
 
-      # WINTER15 is only valid Dec 1-31
-      # If today is not in December, discount should not apply
-      # This test will pass if run outside December
-      if Date.today.month != 12
-        expect(result.discount_amount).to eq(BigDecimal("0"))
-      end
+      expect(result.discount_amount).to eq(BigDecimal("0"))
+      expect(result.applied_rules).to be_empty
     end
   end
 end

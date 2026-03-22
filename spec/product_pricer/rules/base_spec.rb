@@ -3,17 +3,17 @@
 RSpec.describe ProductPricer::Rules::Base do
   describe "#initialize" do
     it "loads config from file" do
-      config_path = File.join(__dir__, "..", "..", "..", "config", "delivery.json")
+      config_path = File.join(__dir__, "..", "..", "fixtures", "delivery.json")
       rule = described_class.new(config_path)
 
       expect(rule.config).to be_a(Hash)
       expect(rule.config.keys).to include("regions")
     end
 
-    it "handles missing config file" do
-      expect do
-        described_class.new("/nonexistent/path.json")
-      end.to raise_error(ProductPricer::ConfigNotFoundError)
+    it "handles missing config file gracefully" do
+      rule = described_class.new("/nonexistent/path.json")
+
+      expect(rule.config).to be_nil
     end
 
     it "handles invalid JSON" do

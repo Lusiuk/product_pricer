@@ -36,16 +36,18 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
       result = rule.apply(context)
 
       # Should be rounded to 2 decimals
-      expect(result.final_price.to_s.split(".")[1].length).to be <= 2
+      decimal_places = result.final_price.to_s.split(".")[1]&.length || 0
+      expect(decimal_places).to be <= 2
     end
 
-    it "tracks round rule" do
+    it "tracks round rule in applied_rules" do
       product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
       context = ProductPricer::CalculationContext.new(product: product, region: "EU")
 
       result = rule.apply(context)
 
       expect(result.applied_rules).to include("round")
+      expect(result.breakdown).to have_key("round")
     end
   end
 end

@@ -1,0 +1,27 @@
+{
+  "promo_codes": {
+    "FLAT10": {
+      "type": "fixed",
+      "value": "10.00",
+      "applicable_categories": ["electronics", "food", "books", "clothing"],
+      "valid_from": "2020-01-01",
+      "valid_until": "2030-12-31"
+    },
+    "FLAT20": {
+      "type": "fixed",
+      "value": "20.00",
+      "applicable_categories": ["electronics", "food", "books", "clothing"],
+      "valid_from": "2020-01-01",
+      "valid_until": "2030-12-31"
+    },
+    "SUMMER20": {
+      "type": "percentage",
+      "value": "0.20",
+      "min_purchase": "50.00",
+      "max_discount": "100.00",
+      "applicable_categories": ["electronics", "clothing"],
+      "valid_from": "2020-06-01",
+      "valid_until": "2030-08-31"
+    }
+  }
+}

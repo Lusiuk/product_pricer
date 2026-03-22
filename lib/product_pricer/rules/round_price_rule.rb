@@ -13,7 +13,6 @@ module ProductPricer
         # Calculate final price
         final = context.base_price
         final += context.delivery_cost
-        final += context.weight_surcharge
         final += context.tax_amount
         final -= context.discount_amount
 

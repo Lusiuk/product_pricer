@@ -1,0 +1,34 @@
+{
+  "regions": {
+    "US": {
+      "base_cost": "5.99",
+      "weight_multiplier": "0.5"
+    },
+    "EU": {
+      "base_cost": "8.99",
+      "weight_multiplier": "0.75"
+    },
+    "RU": {
+      "base_cost": "3.99",
+      "weight_multiplier": "0.25"
+    },
+    "UK": {
+      "base_cost": "6.99",
+      "weight_multiplier": "0.6"
+    }
+  },
+  "weight_thresholds": [
+    {
+      "min_weight": "0",
+      "surcharge_per_kg": "0.5"
+    },
+    {
+      "min_weight": "5",
+      "surcharge_per_kg": "0.3"
+    },
+    {
+      "min_weight": "10",
+      "surcharge_per_kg": "0.1"
+    }
+  ]
+}

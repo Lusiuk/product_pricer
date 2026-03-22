@@ -1,25 +1,24 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer::Pricer do
-  let(:config_dir) { File.join(__dir__, "..", "..", "config") }
+  let(:fixtures_dir) { File.join(__dir__, "..", "fixtures") }
   let(:product) { OpenStruct.new(price: 99.99, category: "electronics", weight: 2.5) }
 
   let(:pricer) do
     described_class.new(
-      delivery_config: File.join(config_dir, "delivery.json"),
-      tax_config: File.join(config_dir, "taxes.json"),
-      discount_config: File.join(config_dir, "sales.json")
+      delivery_config: File.join(fixtures_dir, "delivery.json"),
+      tax_config: File.join(fixtures_dir, "taxes.json"),
+      discount_config: File.join(fixtures_dir, "sales.json")
     )
   end
 
   describe "#calculate" do
-    it "calculates price with all rules applied" do
+    it "calculates price with delivery and tax rules applied" do
       result = pricer.calculate(
         product: product,
         region: "EU",
         promo_code: "FLAT10",
-        quantity: 1,
-        user_tier: nil
+        quantity: 1
       )
 
       expect(result).to be_a(ProductPricer::CalculationContext)
@@ -30,17 +29,16 @@ RSpec.describe ProductPricer::Pricer do
       expect(result.final_price).to be > 0
     end
 
-    it "applies multiple discounts (promo + loyalty)" do
+    it "applies promo discount" do
       result = pricer.calculate(
         product: product,
         region: "EU",
-        promo_code: "FLAT10",
-        quantity: 1,
-        user_tier: "gold"
+        promo_code: "FLAT20",
+        quantity: 1
       )
 
-      expect(result.discount_amount).to be > BigDecimal("10")
-      expect(result.applied_rules).to include("promo:FLAT10", "loyalty:gold")
+      expect(result.discount_amount).to eq(BigDecimal("20"))
+      expect(result.applied_rules).to include("promo:FLAT20")
     end
 
     it "calculates with quantity multiplier" do
