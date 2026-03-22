@@ -1,0 +1,1 @@
+Calculate final product prices with support for discounts, taxes, and delivery.
