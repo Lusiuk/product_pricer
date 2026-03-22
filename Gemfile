@@ -9,3 +9,5 @@ gem "irb"
 gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"
+gem "simplecov", "~> 0.21.0"
+gem "rubocop", "~> 1.50.0"
