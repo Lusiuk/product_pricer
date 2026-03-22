@@ -1,0 +1,47 @@
+{
+  "promo_codes": {
+    "SUMMER20": {
+      "type": "percentage",
+      "value": "0.20",
+      "min_purchase": "50.00",
+      "max_discount": "100.00",
+      "applicable_categories": ["electronics", "clothing"],
+      "valid_from": "2024-06-01",
+      "valid_until": "2024-08-31"
+    },
+    "WINTER15": {
+      "type": "percentage",
+      "value": "0.15",
+      "min_purchase": "30.00",
+      "max_discount": "50.00",
+      "applicable_categories": ["clothing", "books"],
+      "valid_from": "2024-12-01",
+      "valid_until": "2024-12-31"
+    },
+    "FLAT10": {
+      "type": "fixed",
+      "value": "10.00",
+      "applicable_categories": ["electronics", "food", "books", "clothing"],
+      "valid_from": "2024-01-01",
+      "valid_until": "2024-12-31"
+    }
+  },
+  "loyalty_tiers": {
+    "bronze": {
+      "min_purchases": "5",
+      "discount": "0.05"
+    },
+    "silver": {
+      "min_purchases": "10",
+      "discount": "0.08"
+    },
+    "gold": {
+      "min_purchases": "20",
+      "discount": "0.10"
+    },
+    "platinum": {
+      "min_purchases": "50",
+      "discount": "0.15"
+    }
+  }
+}
