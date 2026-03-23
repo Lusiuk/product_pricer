@@ -10,7 +10,9 @@ require_relative 'product_pricer/rules/promo_rule'
 require_relative 'product_pricer/rules/round_price_rule'
 require_relative 'product_pricer/pricer'
 
+# The main module of the ProductPricer library
 module ProductPricer
+  # Base class of errors
   class Error < StandardError; end
 
   def self.calculate(product:, region:, promo_code: nil, quantity: 1, config_dir: nil)

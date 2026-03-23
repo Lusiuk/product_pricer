@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module ProductPricer
+  # The main class for calculating the final cost of the product
   class Pricer
     def initialize(delivery_config: nil, tax_config: nil, discount_config: nil)
       @delivery_config = delivery_config

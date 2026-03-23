@@ -4,6 +4,7 @@ require 'bigdecimal'
 
 module ProductPricer
   module Rules
+    # Tax calculation rule based on product category and region
     class TaxRule < Base
       def priority
         100
