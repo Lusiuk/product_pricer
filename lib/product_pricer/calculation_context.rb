@@ -8,7 +8,7 @@ module ProductPricer
     attr_reader :product, :region, :promo_code, :quantity, :applied_rules, :breakdown
     attr_accessor :base_price, :delivery_cost, :tax_amount, :discount_amount, :final_price
 
-    def initialize(product:, region:, promo_code: nil, quantity: 1, user_tier: nil)
+    def initialize(product:, region:, promo_code: nil, quantity: 1)
       @product = normalize_product(product)
       @region = region
       @promo_code = promo_code

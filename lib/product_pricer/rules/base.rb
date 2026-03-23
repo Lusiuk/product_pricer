@@ -27,7 +27,7 @@ module ProductPricer
       rescue JSON::ParserError => e
         raise ProductPricer::Error, "Invalid JSON in config #{@config_path}: #{e.message}"
       rescue Errno::ENOENT => e
-        raise ProductPricer::ConfigNotFoundError, "Config file not found: #{@config_path}"
+        raise ProductPricer::ConfigNotFoundError, "Config file not found: #{@config_path}: #{e.message}"
       end
     end
   end

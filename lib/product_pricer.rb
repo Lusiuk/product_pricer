@@ -13,7 +13,7 @@ require_relative 'product_pricer/pricer'
 module ProductPricer
   class Error < StandardError; end
 
-  def self.calculate(product:, region:, promo_code: nil, quantity: 1, user_tier: nil, config_dir: nil)
+  def self.calculate(product:, region:, promo_code: nil, quantity: 1, config_dir: nil)
     config_dir ||= File.join(File.dirname(__FILE__), '..', 'config')
 
     pricer = Pricer.new(
@@ -26,8 +26,7 @@ module ProductPricer
       product:,
       region:,
       promo_code:,
-      quantity:,
-      user_tier:
+      quantity:
     )
   end
 end
