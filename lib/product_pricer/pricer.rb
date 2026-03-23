@@ -17,7 +17,6 @@ module ProductPricer
         region:,
         promo_code:,
         quantity:,
-        user_tier:
       )
 
       # Execute rules in priority order
