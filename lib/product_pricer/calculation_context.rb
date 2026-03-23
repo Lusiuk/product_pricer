@@ -4,6 +4,7 @@ require 'bigdecimal'
 require 'ostruct'
 
 module ProductPricer
+  # Holds all pricing data and tracks applied rules throughout the calculation pipeline
   class CalculationContext
     attr_reader :product, :region, :promo_code, :quantity, :applied_rules, :breakdown
     attr_accessor :base_price, :delivery_cost, :tax_amount, :discount_amount, :final_price

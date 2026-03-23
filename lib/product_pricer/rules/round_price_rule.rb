@@ -4,6 +4,7 @@ require 'bigdecimal'
 
 module ProductPricer
   module Rules
+    # Applies final rounding to 2 decimal places as the last rule in the chain
     class RoundPriceRule < Base
       def priority
         999
