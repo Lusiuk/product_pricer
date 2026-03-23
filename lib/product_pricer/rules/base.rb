@@ -4,6 +4,7 @@ require 'json'
 
 module ProductPricer
   module Rules
+    # Interface for product pricer rules
     class Base
       attr_reader :config
 

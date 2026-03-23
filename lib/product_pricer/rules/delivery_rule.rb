@@ -4,6 +4,7 @@ require 'bigdecimal'
 
 module ProductPricer
   module Rules
+    # Delivery rule class, applying delivery price info to context
     class DeliveryRule < Base
       def priority
         10

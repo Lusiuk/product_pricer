@@ -9,14 +9,14 @@ module ProductPricer
       @rules = initialize_rules
     end
 
-    def calculate(product:, region:, promo_code: nil, quantity: 1, user_tier: nil)
+    def calculate(product:, region:, promo_code: nil, quantity: 1)
       validate_inputs(product, region)
 
       context = CalculationContext.new(
         product:,
         region:,
         promo_code:,
-        quantity:,
+        quantity:
       )
 
       # Execute rules in priority order
