@@ -19,11 +19,16 @@ module ProductPricer
         base_cost = BigDecimal(region_config['base_cost'].to_s)
         weight_multiplier = BigDecimal(region_config['weight_multiplier'].to_s || '0')
 
-        delivery_cost = base_cost + (BigDecimal(context.product.weight.to_s) * weight_multiplier)
-        context.delivery_cost = delivery_cost
+        context.delivery_cost = calculate_cost(context.product.weight, base_cost, weight_multiplier)
         context.track_rule('delivery', { base_cost:, weight_multiplier: })
 
         context
+      end
+
+      private
+
+      def calculate_cost(weight, base, multiplier)
+        base + (BigDecimal(weight.to_s) * multiplier)
       end
     end
   end
