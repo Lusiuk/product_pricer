@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer::Rules::Base do
-  describe "#initialize" do
-    it "loads config from file" do
-      config_path = File.join(__dir__, "..", "..", "fixtures", "delivery.json")
+  describe '#initialize' do
+    it 'loads config from file' do
+      config_path = File.join(__dir__, '..', '..', 'fixtures', 'delivery.json')
       rule = described_class.new(config_path)
 
       expect(rule.config).to be_a(Hash)
-      expect(rule.config.keys).to include("regions")
+      expect(rule.config.keys).to include('regions')
     end
 
-    it "handles missing config file gracefully" do
-      rule = described_class.new("/nonexistent/path.json")
+    it 'handles missing config file gracefully' do
+      rule = described_class.new('/nonexistent/path.json')
 
       expect(rule.config).to be_nil
     end
 
-    it "handles invalid JSON" do
-      temp_file = File.join(__dir__, "temp_invalid.json")
-      File.write(temp_file, "{ invalid json")
+    it 'handles invalid JSON' do
+      temp_file = File.join(__dir__, 'temp_invalid.json')
+      File.write(temp_file, '{ invalid json')
 
       begin
         expect do
@@ -30,15 +30,15 @@ RSpec.describe ProductPricer::Rules::Base do
     end
   end
 
-  describe "#priority" do
-    it "has default priority 100" do
+  describe '#priority' do
+    it 'has default priority 100' do
       rule = described_class.new
       expect(rule.priority).to eq(100)
     end
   end
 
-  describe "#apply" do
-    it "raises NotImplementedError" do
+  describe '#apply' do
+    it 'raises NotImplementedError' do
       rule = described_class.new
       context = double
 

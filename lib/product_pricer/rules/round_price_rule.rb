@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "bigdecimal"
+require 'bigdecimal'
 
 module ProductPricer
   module Rules
@@ -18,7 +18,7 @@ module ProductPricer
 
         # Round to 2 decimal places
         context.final_price = final.round(2)
-        context.track_rule("round", { final_price: context.final_price })
+        context.track_rule('round', { final_price: context.final_price })
 
         context
       end

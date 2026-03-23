@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer do
-  it "has a version number" do
+  it 'has a version number' do
     expect(ProductPricer::VERSION).not_to be nil
   end
 
-  describe ".calculate" do
-    it "calculates simple price without configs" do
-      product = OpenStruct.new(price: 100, category: "electronics", weight: 1)
+  describe '.calculate' do
+    it 'calculates simple price without configs' do
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
 
       result = ProductPricer.calculate(
-        product: product,
-        region: "US"
+        product:,
+        region: 'US'
       )
 
       expect(result).to be_a(ProductPricer::CalculationContext)
-      expect(result.base_price).to eq(BigDecimal("100"))
+      expect(result.base_price).to eq(BigDecimal('100'))
     end
   end
 end

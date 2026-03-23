@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require "bigdecimal"
-require "ostruct"
+require 'bigdecimal'
+require 'ostruct'
 
 module ProductPricer
   class CalculationContext
-    attr_reader :product, :region, :promo_code, :quantity
+    attr_reader :product, :region, :promo_code, :quantity, :applied_rules, :breakdown
     attr_accessor :base_price, :delivery_cost, :tax_amount, :discount_amount, :final_price
-    attr_reader :applied_rules, :breakdown
 
     def initialize(product:, region:, promo_code: nil, quantity: 1, user_tier: nil)
       @product = normalize_product(product)
@@ -16,9 +15,9 @@ module ProductPricer
       @quantity = quantity
 
       @base_price = BigDecimal(@product.price.to_s) * quantity
-      @delivery_cost = BigDecimal("0")
-      @tax_amount = BigDecimal("0")
-      @discount_amount = BigDecimal("0")
+      @delivery_cost = BigDecimal('0')
+      @tax_amount = BigDecimal('0')
+      @discount_amount = BigDecimal('0')
       @final_price = @base_price
 
       @applied_rules = []

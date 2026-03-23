@@ -13,11 +13,11 @@ module ProductPricer
       validate_inputs(product, region)
 
       context = CalculationContext.new(
-        product: product,
-        region: region,
-        promo_code: promo_code,
-        quantity: quantity,
-        user_tier: user_tier
+        product:,
+        region:,
+        promo_code:,
+        quantity:,
+        user_tier:
       )
 
       # Execute rules in priority order
@@ -40,9 +40,9 @@ module ProductPricer
     end
 
     def validate_inputs(product, region)
-      raise ProductPricer::InvalidProductError, "Product cannot be nil" unless product
-      raise ProductPricer::InvalidProductError, "Product must have a price" unless product.respond_to?(:price)
-      raise ProductPricer::InvalidRegionError, "Region cannot be empty" if region.to_s.strip.empty?
+      raise ProductPricer::InvalidProductError, 'Product cannot be nil' unless product
+      raise ProductPricer::InvalidProductError, 'Product must have a price' unless product.respond_to?(:price)
+      raise ProductPricer::InvalidRegionError, 'Region cannot be empty' if region.to_s.strip.empty?
     end
   end
 end
