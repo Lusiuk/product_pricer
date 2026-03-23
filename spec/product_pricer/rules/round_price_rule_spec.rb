@@ -35,9 +35,9 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
 
       result = rule.apply(context)
 
-      # Should be rounded to 2 decimals
-      decimal_places = result.final_price.to_s.split(".")[1]&.length || 0
-      expect(decimal_places).to be <= 2
+      # Проверяем что значение округлено до 2 знаков после запятой
+      # 100 + 5.555 + 15.333 = 120.888 -> 120.89
+      expect(result.final_price).to eq(BigDecimal("120.89"))
     end
 
     it "tracks round rule in applied_rules" do
