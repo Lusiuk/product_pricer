@@ -13,7 +13,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
 
   describe '#apply' do
     it 'applies fixed discount' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(
         product:,
         region: 'EU',
@@ -27,7 +27,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
     end
 
     it 'applies different fixed discounts' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
 
       context_flat10 = ProductPricer::CalculationContext.new(
         product:,
@@ -49,7 +49,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
     end
 
     it 'does not apply invalid promo code' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(
         product:,
         region: 'EU',
@@ -63,8 +63,8 @@ RSpec.describe ProductPricer::Rules::PromoRule do
     end
 
     it 'respects applicable categories' do
-      product_electronics = OpenStruct.new(price: 100, category: 'electronics')
-      product_food = OpenStruct.new(price: 100, category: 'food')
+      product_electronics = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
+      product_food = OpenStruct.new(price: 100, category: 'food', weight: 1)
 
       # SUMMER20 применяется только к electronics и clothing
       context_electronics = ProductPricer::CalculationContext.new(
@@ -88,7 +88,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
     end
 
     it 'returns context without promo code' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       result = rule.apply(context)

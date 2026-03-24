@@ -2,7 +2,7 @@
 
 RSpec.describe ProductPricer::Pricer do
   let(:fixtures_dir) { File.join(__dir__, '..', 'fixtures') }
-  let(:product) { OpenStruct.new(price: 99.99, category: 'electronics') }
+  let(:product) { OpenStruct.new(price: 99.99, category: 'electronics', weight: 2.5) }
 
   let(:pricer) do
     described_class.new(

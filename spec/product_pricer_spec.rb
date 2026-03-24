@@ -7,7 +7,7 @@ RSpec.describe ProductPricer do
 
   describe '.calculate' do
     it 'calculates simple price without configs' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
 
       result = ProductPricer.calculate(
         product:,

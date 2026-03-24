@@ -11,7 +11,7 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
 
   describe '#apply' do
     it 'calculates and rounds final price' do
-      product = OpenStruct.new(price: 99.99, category: 'electronics')
+      product = OpenStruct.new(price: 99.99, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       context.delivery_cost = BigDecimal('8.99')
@@ -26,7 +26,7 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
     end
 
     it 'rounds to 2 decimal places' do
-      product = OpenStruct.new(price: 100, category: 'food')
+      product = OpenStruct.new(price: 100, category: 'food', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       context.delivery_cost = BigDecimal('5.555')
@@ -41,7 +41,7 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
     end
 
     it 'tracks round rule in applied_rules' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       result = rule.apply(context)

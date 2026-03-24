@@ -12,7 +12,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
 
   describe '#apply' do
     it 'applies tax based on category and region' do
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       result = rule.apply(context)
@@ -23,7 +23,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
     end
 
     it 'applies different tax rates per category' do
-      product_food = OpenStruct.new(price: 100, category: 'food')
+      product_food = OpenStruct.new(price: 100, category: 'food', weight: 1)
       context_food = ProductPricer::CalculationContext.new(product: product_food, region: 'EU')
 
       rule.apply(context_food)
@@ -34,7 +34,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
     end
 
     it 'handles unknown category' do
-      product = OpenStruct.new(price: 100, category: 'unknown_category')
+      product = OpenStruct.new(price: 100, category: 'unknown_category', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       result = rule.apply(context)
@@ -44,7 +44,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
 
     it 'includes delivery in tax calculation if configured' do
       # This would require a modified config file to test
-      product = OpenStruct.new(price: 100, category: 'electronics')
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
       context.delivery_cost = BigDecimal('10')
 

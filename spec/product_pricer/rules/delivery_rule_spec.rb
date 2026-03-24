@@ -4,7 +4,7 @@ RSpec.describe ProductPricer::Rules::DeliveryRule do
   let(:fixtures_dir) { File.join(__dir__, '..', '..', 'fixtures') }
   let(:config_path) { File.join(fixtures_dir, 'delivery.json') }
   let(:rule) { described_class.new(config_path) }
-  let(:product) { OpenStruct.new(price: 100) }
+  let(:product) { OpenStruct.new(price: 100, weight: 2.5) }
 
   describe '#priority' do
     it 'has priority 10' do
