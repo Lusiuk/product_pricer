@@ -5,6 +5,7 @@ require 'date'
 
 module ProductPricer
   module Rules
+    # Applies promotional discounts based on promo code, validity dates, and category restrictions
     class PromoRule < Base
       def priority
         50
