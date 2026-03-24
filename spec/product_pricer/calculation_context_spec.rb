@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer::CalculationContext do
-  let(:product) { OpenStruct.new(price: 99.99, category: 'electronics', weight: 2.5) }
+  let(:product) { OpenStruct.new(price: 99.99, category: 'electronics') }
 
   describe '#initialize' do
     it 'initializes context with product and region' do
