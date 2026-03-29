@@ -18,7 +18,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       result = rule.apply(context)
 
       # EU electronics tax: 20%
-      expected_tax = BigDecimal('100') * BigDecimal('0.20')
+      expected_tax = BigDecimal(100) * BigDecimal('0.20')
       expect(result.tax_amount).to eq(expected_tax)
     end
 
@@ -29,7 +29,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       rule.apply(context_food)
 
       # EU food tax: 5%
-      expected_tax = BigDecimal('100') * BigDecimal('0.05')
+      expected_tax = BigDecimal(100) * BigDecimal('0.05')
       expect(context_food.tax_amount).to eq(expected_tax)
     end
 
@@ -39,19 +39,19 @@ RSpec.describe ProductPricer::Rules::TaxRule do
 
       result = rule.apply(context)
 
-      expect(result.tax_amount).to eq(BigDecimal('0'))
+      expect(result.tax_amount).to eq(BigDecimal(0))
     end
 
     it 'includes delivery in tax calculation if configured' do
       # This would require a modified config file to test
       product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
-      context.delivery_cost = BigDecimal('10')
+      context.delivery_cost = BigDecimal(10)
 
       rule.apply(context)
 
       # With tax_shipping: false, only base_price is taxed
-      expected_tax = BigDecimal('100') * BigDecimal('0.20')
+      expected_tax = BigDecimal(100) * BigDecimal('0.20')
       expect(context.tax_amount).to eq(expected_tax)
     end
   end

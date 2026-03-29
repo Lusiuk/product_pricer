@@ -25,7 +25,7 @@ RSpec.describe ProductPricer::Pricer do
       expect(result.base_price).to eq(BigDecimal('99.99'))
       expect(result.delivery_cost).to be > 0
       expect(result.tax_amount).to be > 0
-      expect(result.discount_amount).to eq(BigDecimal('10'))
+      expect(result.discount_amount).to eq(BigDecimal(10))
       expect(result.final_price).to be > 0
     end
 
@@ -37,7 +37,7 @@ RSpec.describe ProductPricer::Pricer do
         quantity: 1
       )
 
-      expect(result.discount_amount).to eq(BigDecimal('20'))
+      expect(result.discount_amount).to eq(BigDecimal(20))
       expect(result.applied_rules).to include('promo:FLAT20')
     end
 

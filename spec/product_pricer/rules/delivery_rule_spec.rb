@@ -41,7 +41,7 @@ RSpec.describe ProductPricer::Rules::DeliveryRule do
 
       result = rule.apply(context)
 
-      expect(result.delivery_cost).to eq(BigDecimal('0'))
+      expect(result.delivery_cost).to eq(BigDecimal(0))
     end
 
     it 'returns context without config' do

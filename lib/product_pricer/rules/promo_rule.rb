@@ -19,7 +19,7 @@ module ProductPricer
         return context unless promo
 
         # Отладка: выводим ключевые данные
-        puts "=== DEBUG PromoRule#apply ==="
+        puts '=== DEBUG PromoRule#apply ==='
         puts "Current date: #{Date.today}"
         puts "Promo config: #{promo}"
         puts "Is promo valid? #{promo_valid?(promo)}"
@@ -65,7 +65,7 @@ module ProductPricer
         when 'fixed'
           BigDecimal(promo['value'].to_s)
         else
-          BigDecimal('0')
+          BigDecimal(0)
         end
       end
     end

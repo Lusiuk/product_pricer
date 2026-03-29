@@ -9,13 +9,13 @@ RSpec.describe ProductPricer do
     it 'calculates simple price without configs' do
       product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
 
-      result = ProductPricer.calculate(
+      result = described_class.calculate(
         product:,
         region: 'US'
       )
 
       expect(result).to be_a(ProductPricer::CalculationContext)
-      expect(result.base_price).to eq(BigDecimal('100'))
+      expect(result.base_price).to eq(BigDecimal(100))
     end
   end
 end

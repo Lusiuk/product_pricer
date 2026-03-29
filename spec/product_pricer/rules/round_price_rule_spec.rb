@@ -16,7 +16,7 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
 
       context.delivery_cost = BigDecimal('8.99')
       context.tax_amount = BigDecimal('22.55')
-      context.discount_amount = BigDecimal('10')
+      context.discount_amount = BigDecimal(10)
 
       result = rule.apply(context)
 
@@ -31,7 +31,7 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
 
       context.delivery_cost = BigDecimal('5.555')
       context.tax_amount = BigDecimal('15.333')
-      context.discount_amount = BigDecimal('0')
+      context.discount_amount = BigDecimal(0)
 
       result = rule.apply(context)
 

@@ -16,9 +16,9 @@ module ProductPricer
       @quantity = quantity
 
       @base_price = BigDecimal(@product.price.to_s) * quantity
-      @delivery_cost = BigDecimal('0')
-      @tax_amount = BigDecimal('0')
-      @discount_amount = BigDecimal('0')
+      @delivery_cost = BigDecimal(0)
+      @tax_amount = BigDecimal(0)
+      @discount_amount = BigDecimal(0)
       @final_price = @base_price
 
       @applied_rules = []
