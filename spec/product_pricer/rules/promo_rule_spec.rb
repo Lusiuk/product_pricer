@@ -96,5 +96,18 @@ RSpec.describe ProductPricer::Rules::PromoRule do
       expect(result.discount_amount).to eq(BigDecimal('0'))
       expect(result.applied_rules).to be_empty
     end
+
+    it 'does not apply promo code after valid_until' do
+      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
+      context = ProductPricer::CalculationContext.new(product:, region: 'EU', promo_code: 'SUMMER20')
+
+      allow(Date).to receive(:today).and_return(Date.new(2034, 9, 1))
+
+      result = rule.apply(context)
+
+      expect(result.discount_amount).to eq(BigDecimal('0'))
+      expect(result.applied_rules).not_to include('promo:SUMMER20')
+      expect(result.applied_rules).to be_empty
+    end
   end
 end

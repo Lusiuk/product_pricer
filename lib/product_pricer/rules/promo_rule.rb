@@ -17,6 +17,14 @@ module ProductPricer
 
         promo = @config.dig('promo_codes', context.promo_code)
         return context unless promo
+
+        # Отладка: выводим ключевые данные
+        puts "=== DEBUG PromoRule#apply ==="
+        puts "Current date: #{Date.today}"
+        puts "Promo config: #{promo}"
+        puts "Is promo valid? #{promo_valid?(promo)}"
+        puts "Base price: #{context.base_price}"
+
         return context unless promo_valid?(promo)
         return context unless applicable_category?(promo, context)
 
