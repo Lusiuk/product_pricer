@@ -36,11 +36,19 @@ module ProductPricer
     private
 
     def normalize_product(product)
+      # Если пришел Hash, превращаем его в Struct
       if product.is_a?(Hash)
-        OpenStruct.new(product)
-      else
-        product
+        # Создаем класс структуры с ключами хеша в качестве полей
+        product_class = Struct.new(*product.keys.map(&:to_sym))
+        # Создаем экземпляр со значениями хеша
+        return product_class.new(*product.values)
       end
+
+      # Если объект уже имеет метод price, возвращаем его
+      return product if product.respond_to?(:price)
+
+      # Защита от некорректных данных
+      raise ArgumentError, 'Product must be a Hash or respond to :price'
     end
   end
 end
