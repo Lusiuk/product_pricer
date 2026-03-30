@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+require 'json'
+require 'bigdecimal'
+require 'date'
 
 require_relative 'product_pricer/version'
 require_relative 'product_pricer/errors'

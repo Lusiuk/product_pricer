@@ -23,8 +23,8 @@
       "type": "fixed",
       "value": "10.00",
       "applicable_categories": ["electronics", "food", "books", "clothing"],
-      "valid_from": "2024-01-01",
-      "valid_until": "2024-12-31"
+      "valid_from": "2025-01-01",
+      "valid_until": "2027-12-31"
     }
   },
   "loyalty_tiers": {

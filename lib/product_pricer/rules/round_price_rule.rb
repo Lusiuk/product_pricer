@@ -9,7 +9,7 @@ module ProductPricer
       end
 
       def apply(context)
-        context.final_price = context.round(2)
+        context.final_price = context.final_price.round(2)
         context.track_rule('round', { final_price: context.final_price })
         context
       end
