@@ -1,4 +1,5 @@
 {
+  "rule": "Rules::TaxRule",
   "categories": {
     "electronics": {
       "US": "0.00",
@@ -26,7 +27,6 @@
     }
   },
   "rules": {
-    "tax_shipping": false,
     "compound_tax": false
   }
 }

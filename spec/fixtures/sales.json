@@ -1,4 +1,5 @@
 {
+  "rule": "Rules::PromoRule",
   "promo_codes": {
     "FLAT10": {
       "type": "fixed",
