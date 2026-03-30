@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
 
   # --- Runtime dependencies ---
   spec.add_dependency 'bigdecimal', '~> 3.0'
+  spec.add_dependency 'date'
   spec.add_dependency 'json', '~> 2.0'
   spec.add_dependency 'ostruct'
 

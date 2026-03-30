@@ -1,4 +1,5 @@
 {
+  "rule": "Rules::PromoRule",
   "promo_codes": {
     "SUMMER20": {
       "type": "percentage",

@@ -1,16 +1,22 @@
 # frozen_string_literal: true
 
-require 'json'
-
 module ProductPricer
   module Rules
     # Interface for product pricer rules
     class Base
       attr_reader :config
 
-      def initialize(config_path = nil)
-        @config_path = config_path
-        @config = load_config if config_path && File.exist?(config_path)
+      def initialize(config = nil)
+        @config = case config
+                  when String
+                    load_config_file(config)
+                  when Hash
+                    config
+                  when nil
+                    nil
+                  else
+                    raise ArgumentError, 'Config must be a String (path) or Hash'
+                  end
       end
 
       def priority
@@ -23,12 +29,12 @@ module ProductPricer
 
       protected
 
-      def load_config
-        JSON.parse(File.read(@config_path))
+      def load_config_file(path)
+        raise ProductPricer::ConfigNotFoundError, "Config file not found: #{path}" unless File.exist?(path)
+
+        JSON.parse(File.read(path))
       rescue JSON::ParserError => e
-        raise ProductPricer::Error, "Invalid JSON in config #{@config_path}: #{e.message}"
-      rescue Errno::ENOENT => e
-        raise ProductPricer::ConfigNotFoundError, "Config file not found: #{@config_path}: #{e.message}"
+        raise ProductPricer::Error, "Invalid JSON in config #{path}: #{e.message}"
       end
     end
   end
