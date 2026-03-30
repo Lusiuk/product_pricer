@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
-require 'date'
-
 module ProductPricer
   module Rules
     # Applies promotional discounts based on promo code, validity dates, and category restrictions
@@ -19,17 +16,17 @@ module ProductPricer
         return context unless promo
 
         # Отладка: выводим ключевые данные
-        puts '=== DEBUG PromoRule#apply ==='
-        puts "Current date: #{Date.today}"
-        puts "Promo config: #{promo}"
-        puts "Is promo valid? #{promo_valid?(promo)}"
-        puts "Base price: #{context.base_price}"
+        # puts '=== DEBUG PromoRule#apply ==='
+        # puts "Current date: #{Date.today}"
+        # puts "Promo config: #{promo}"
+        # puts "Is promo valid? #{promo_valid?(promo)}"
+        # puts "Base price: #{context.base_price}"
 
         return context unless promo_valid?(promo)
         return context unless applicable_category?(promo, context)
 
         discount = calculate_discount(context.base_price, promo)
-        context.discount_amount += discount
+        context.final_price -= discount
         context.track_rule("promo:#{context.promo_code}", { discount:, type: promo['type'] })
 
         context

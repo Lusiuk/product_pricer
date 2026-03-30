@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
-
 module ProductPricer
   module Rules
     # Applies final rounding to 2 decimal places as the last rule in the chain
@@ -11,16 +9,8 @@ module ProductPricer
       end
 
       def apply(context)
-        # Calculate final price
-        final = context.base_price
-        final += context.delivery_cost
-        final += context.tax_amount
-        final -= context.discount_amount
-
-        # Round to 2 decimal places
-        context.final_price = final.round(2)
+        context.final_price = context.round(2)
         context.track_rule('round', { final_price: context.final_price })
-
         context
       end
     end
