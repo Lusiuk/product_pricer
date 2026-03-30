@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
-require 'ostruct'
-
 module ProductPricer
   # Holds all pricing data and tracks applied rules throughout the calculation pipeline
   class CalculationContext
     attr_reader :product, :region, :promo_code, :quantity, :applied_rules, :breakdown
-    attr_accessor :base_price, :delivery_cost, :tax_amount, :discount_amount, :final_price
+    attr_accessor :base_price, :final_price
 
     def initialize(product:, region:, promo_code: nil, quantity: 1)
       @product = normalize_product(product)
@@ -16,9 +13,6 @@ module ProductPricer
       @quantity = quantity
 
       @base_price = BigDecimal(@product.price.to_s) * quantity
-      @delivery_cost = BigDecimal(0)
-      @tax_amount = BigDecimal(0)
-      @discount_amount = BigDecimal(0)
       @final_price = @base_price
 
       @applied_rules = []
@@ -33,9 +27,6 @@ module ProductPricer
     def to_h
       {
         base_price: @base_price,
-        delivery_cost: @delivery_cost,
-        tax_amount: @tax_amount,
-        discount_amount: @discount_amount,
         final_price: @final_price,
         applied_rules: @applied_rules,
         breakdown: @breakdown

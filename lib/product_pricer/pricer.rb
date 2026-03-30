@@ -1,17 +1,33 @@
 # frozen_string_literal: true
 
 module ProductPricer
-  # The main class for calculating the final cost of the product
   class Pricer
-    def initialize(delivery_config: nil, tax_config: nil, discount_config: nil)
-      @delivery_config = delivery_config
-      @tax_config = tax_config
-      @discount_config = discount_config
-      @rules = initialize_rules
+    def initialize
+      @rules = []
+    end
+
+    def add_rule(rule)
+      raise ArgumentError, 'Rule must be a Rules::Base instance' unless rule.is_a?(Rules::Base)
+
+      @rules << rule
+    end
+
+    def add_rules(rules)
+      raise ArgumentError, 'Rules must be an Array' unless rules.is_a?(Array)
+
+      rules.each { |rule| add_rule(rule) } unless rules.empty?
+    end
+
+    def remove_rule(rule_class)
+      @rules.reject! { |rule| rule.is_a?(rule_class) }
+    end
+
+    def remove_rules(rule_classes)
+      rule_classes.each { |rule_class| remove_rule(rule_class) }
     end
 
     def calculate(product:, region:, promo_code: nil, quantity: 1)
-      validate_inputs(product, region)
+      validate_inputs(product, region, quantity)
 
       context = CalculationContext.new(
         product:,
@@ -20,7 +36,6 @@ module ProductPricer
         quantity:
       )
 
-      # Execute rules in priority order
       @rules.sort_by(&:priority).each do |rule|
         context = rule.apply(context)
       end
@@ -30,19 +45,11 @@ module ProductPricer
 
     private
 
-    def initialize_rules
-      [
-        Rules::DeliveryRule.new(@delivery_config),
-        Rules::TaxRule.new(@tax_config),
-        Rules::PromoRule.new(@discount_config),
-        Rules::RoundPriceRule.new
-      ]
-    end
-
-    def validate_inputs(product, region)
+    def validate_inputs(product, region, quantity)
       raise ProductPricer::InvalidProductError, 'Product cannot be nil' unless product
-      raise ProductPricer::InvalidProductError, 'Product must have a price' unless product.respond_to?(:price)
+      raise ProductPricer::InvalidProductPriceError, 'Product must have a price' unless product.respond_to?(:price)
       raise ProductPricer::InvalidRegionError, 'Region cannot be empty' if region.to_s.strip.empty?
+      raise ProductPricer::InvalidQuantityError, 'Quantity must be positive' if quantity.to_i <= 0
     end
   end
 end
