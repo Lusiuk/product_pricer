@@ -1,40 +1,49 @@
 # ProductPricer
 
-**ProductPricer** — это небольшой гем для расчёта цены товара в Ruby-приложениях. Мы делали его как учебный проект, чтобы разобраться с паттернами и заодно решить практическую задачу: гибко считать цену с учётом налогов, доставки и скидок.
-
-Внутри используется что-то вроде конвейера правил (Pipeline), где каждое правило по очереди изменяет итоговую цену.
+**ProductPricer** — небольшой гем для расчёта цены товара в Ruby‑приложениях. Это учебный проект с фокусом на расширяемую архитектуру правил: каждое правило по очереди изменяет итоговую цену.
 
 ---
-## Локальная установка
-На текущий момент гем не опубликован на RubyGems, так как мы не хотим перегружать его учебными проектами.
-Чтобы использовать библиотеку сейчас, вам необходимо собрать её локально из нашего репозитория:
 
-### 1. Склонируйте репозиторий и перейдите в его корень.
-### 2. Соберите гем командой:
+## Локальная установка
+
+Гем пока не опубликован на RubyGems, поэтому используется локальная сборка.
+
+1. Склонируйте репозиторий и перейдите в корень.
+2. Соберите гем:
 
 ```bash
 gem build product_pricer.gemspec
 ```
-### 3.Установите собранный файл
+
+3. Установите:
+
 ```bash
 gem install product_pricer
 ```
 
+---
 
 ## Как пользоваться
 
-### 1. Создаём pricer
-
-При старте приложения подгружаем конфиги с правилами:
+### 1. Создаём `Pricer` и добавляем правила
 
 ```ruby
 require 'product_pricer'
 
-pricer = ProductPricer::Pricer.new(
-  delivery_rules: 'config/delivery.json',
-  tax_rules: 'config/taxes.json',
-  discount_rules: 'config/sales.json'
-)
+pricer = ProductPricer::Pricer.new
+
+fixtures_dir = File.join(__dir__, 'config')
+
+pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
+  File.join(fixtures_dir, 'delivery.json')
+))
+pricer.add_rule(ProductPricer::Rules::TaxRule.new(
+  File.join(fixtures_dir, 'taxes.json')
+))
+pricer.add_rule(ProductPricer::Rules::PromoRule.new(
+  File.join(fixtures_dir, 'sales.json')
+))
+pricer.add_rule(ProductPricer::Rules::RoundPriceRule.new)
 ```
 
 ---
@@ -43,7 +52,7 @@ pricer = ProductPricer::Pricer.new(
 
 ```ruby
 result = pricer.calculate(
-  product: { price: '99.99', category: 'electronics' },
+  product: { price: '99.99', category: 'electronics', weight: 2.5 },
   region: 'EU',
   promo_code: 'SUMMER20',
   quantity: 3
@@ -56,17 +65,19 @@ result = pricer.calculate(
 
 ```ruby
 puts result.final_price
-puts result.discount_amount
 puts result.applied_rules
+puts result.breakdown
 ```
 
-Можно увидеть не только итоговую цену, но и какие правила вообще сработали — это удобно для дебага.
+`result` — это `ProductPricer::CalculationContext`, в котором есть:
+- `base_price` — цена до правил
+- `final_price` — итоговая цена
+- `applied_rules` — список применённых правил
+- `breakdown` — детализация по правилам
 
 ---
 
 ### Быстрый вариант
-
-Если не хочется создавать объект:
 
 ```ruby
 ProductPricer.calculate(product: product, region: 'US')
@@ -74,23 +85,11 @@ ProductPricer.calculate(product: product, region: 'US')
 
 ---
 
-## Что умеет
+## Конфигурации правил
 
-Если коротко:
+Логика правил хранится в JSON и не захардкожена в коде.
 
-* считает деньги нормально (через `BigDecimal`, без сюрпризов с float)
-* легко расширяется (новое правило = новый класс)
-* можно понять, что произошло (есть список применённых правил)
-* порядок правил можно менять через `priority`
-* вся бизнес-логика лежит в JSON, а не захардкожена
-
----
-
-## Конфигурация
-
-Мы специально вынесли всю логику в JSON, чтобы можно было менять правила без переписывания кода.
-
-### Пример налогов
+### Пример налогов (`taxes.json`)
 
 ```json
 {
@@ -102,7 +101,6 @@ ProductPricer.calculate(product: product, region: 'US')
     }
   },
   "rules": {
-    "tax_shipping": false,
     "compound_tax": false
   }
 }
@@ -110,7 +108,7 @@ ProductPricer.calculate(product: product, region: 'US')
 
 ---
 
-### Пример скидок
+### Пример скидок (`sales.json`)
 
 ```json
 {
@@ -122,6 +120,10 @@ ProductPricer.calculate(product: product, region: 'US')
       "max_discount": 100.00,
       "valid_from": "2024-06-01",
       "valid_until": "2024-08-31"
+    },
+    "FLAT10": {
+      "type": "fixed",
+      "value": 10.00
     }
   }
 }
@@ -129,11 +131,47 @@ ProductPricer.calculate(product: product, region: 'US')
 
 ---
 
+## Использование через `rules_config`
+
+Можно передать конфиг напрямую:
+
+### 1) Один файл:
+
+```ruby
+ProductPricer.calculate(
+  product: product,
+  region: 'EU',
+  rules_config: 'config/taxes.json'
+)
+```
+
+### 2) Несколько файлов:
+
+```ruby
+ProductPricer.calculate(
+  product: product,
+  region: 'EU',
+  rules_config: ['config/delivery.json', 'config/taxes.json']
+)
+```
+
+### 3) Хэш-конфиг:
+
+```ruby
+config = {
+  'rule' => 'Rules::TaxRule',
+  'categories' => {
+    'electronics' => { 'US' => '0.10', 'EU' => '0.20' }
+  },
+  'rules' => { 'compound_tax' => false }
+}
+
+ProductPricer.calculate(product: product, region: 'US', rules_config: config)
+```
+
+---
+
 ## Как добавить своё правило
-
-Если стандартных правил не хватает — можно написать своё.
-
-### Пример
 
 ```ruby
 module ProductPricer
@@ -147,8 +185,8 @@ module ProductPricer
         return context unless black_friday?
 
         discount = context.base_price * 0.30
-        context.discount_amount += discount
-        context.track_rule('black_friday')
+        context.final_price -= discount
+        context.track_rule('black_friday', { discount: discount })
         context
       end
 
@@ -162,22 +200,12 @@ module ProductPricer
 end
 ```
 
-Дальше просто подключаете это правило — и оно начинает участвовать в расчёте.
-
 ---
 
 ## Тесты
 
-Мы постарались нормально покрыть код тестами.
-
 ```bash
 bundle exec rspec
-```
-
-Если нужен отчёт:
-
-```bash
-bundle exec rspec --format documentation --require simplecov
 ```
 
 Отдельный тест:
