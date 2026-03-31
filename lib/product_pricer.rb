@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'json'
 require 'bigdecimal'
 require 'date'
@@ -59,8 +60,6 @@ module ProductPricer
       Rules::PromoRule
     when 'Rules::RoundPriceRule'
       Rules::RoundPriceRule
-    else
-      nil
     end
   end
 

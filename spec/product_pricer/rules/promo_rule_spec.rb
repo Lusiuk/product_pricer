@@ -21,7 +21,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
 
       result = rule.apply(context)
 
-      expect(result.final_price).to eq(BigDecimal('90'))
+      expect(result.final_price).to eq(BigDecimal(90))
       expect(result.applied_rules).to include('promo:FLAT10')
     end
 
@@ -54,7 +54,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
       result = rule.apply(context)
 
       # SUMMER20 only applies to electronics and clothing
-      expect(result.final_price).to eq(BigDecimal('100'))
+      expect(result.final_price).to eq(BigDecimal(100))
     end
 
     it 'applies percentage discount correctly' do
@@ -65,7 +65,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
       result = rule.apply(context)
 
       # 20% of 100 = 20 discount
-      expect(result.final_price).to eq(BigDecimal('80'))
+      expect(result.final_price).to eq(BigDecimal(80))
     end
 
     it 'respects max discount limit for percentage' do
@@ -76,7 +76,7 @@ RSpec.describe ProductPricer::Rules::PromoRule do
       result = rule.apply(context)
 
       # 20% of 1000 = 200, but max_discount is 100
-      expect(result.final_price).to eq(BigDecimal('900'))
+      expect(result.final_price).to eq(BigDecimal(900))
     end
   end
 end

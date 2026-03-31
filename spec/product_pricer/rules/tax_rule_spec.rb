@@ -22,7 +22,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       result = rule.apply(context)
 
       # EU tax on electronics is 20% = 20
-      expect(result.final_price).to eq(BigDecimal('120'))
+      expect(result.final_price).to eq(BigDecimal(120))
       expect(result.applied_rules).to include('tax')
     end
 
@@ -35,8 +35,8 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       us_result = rule.apply(us_context)
 
       # EU has 20% tax, US has 0%
-      expect(eu_result.final_price).to eq(BigDecimal('120'))
-      expect(us_result.final_price).to eq(BigDecimal('100'))
+      expect(eu_result.final_price).to eq(BigDecimal(120))
+      expect(us_result.final_price).to eq(BigDecimal(100))
     end
 
     it 'skips calculation without category' do
@@ -73,8 +73,8 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       food_result = rule.apply(food_context)
 
       # Electronics: 20%, Food: 5%
-      expect(elec_result.final_price).to eq(BigDecimal('120'))
-      expect(food_result.final_price).to eq(BigDecimal('105'))
+      expect(elec_result.final_price).to eq(BigDecimal(120))
+      expect(food_result.final_price).to eq(BigDecimal(105))
     end
   end
 end

@@ -111,12 +111,12 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
       # Add all rules
       fixtures_dir = File.join(__dir__, '../../fixtures')
       pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
-        File.join(fixtures_dir, 'delivery.json')
-      ))
+                        File.join(fixtures_dir, 'delivery.json')
+                      ))
       pricer.add_rule(ProductPricer::Rules::TaxRule.new(
-        File.join(fixtures_dir, 'taxes.json')
-      ))
-      pricer.add_rule(ProductPricer::Rules::RoundPriceRule.new)
+                        File.join(fixtures_dir, 'taxes.json')
+                      ))
+      pricer.add_rule(described_class.new)
 
       result = pricer.calculate(product:, region: 'EU')
 

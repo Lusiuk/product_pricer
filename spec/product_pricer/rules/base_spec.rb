@@ -56,7 +56,7 @@ RSpec.describe ProductPricer::Rules::Base do
       end.to raise_error(ProductPricer::Error, /Invalid JSON/)
 
       # Cleanup
-      File.delete(invalid_json_file) if File.exist?(invalid_json_file)
+      FileUtils.rm_f(invalid_json_file)
     end
   end
 

@@ -9,7 +9,7 @@ RSpec.describe ProductPricer::Pricer do
   describe '#initialize' do
     it 'creates pricer with empty rules' do
       pricer = described_class.new
-      expect(pricer).to be_a(ProductPricer::Pricer)
+      expect(pricer).to be_a(described_class)
     end
   end
 
@@ -60,8 +60,8 @@ RSpec.describe ProductPricer::Pricer do
     it 'removes rule by class' do
       pricer = described_class.new
       pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
-        File.join(fixtures_dir, 'delivery.json')
-      ))
+                        File.join(fixtures_dir, 'delivery.json')
+                      ))
 
       pricer.remove_rule(ProductPricer::Rules::DeliveryRule)
       result = pricer.calculate(product:, region: 'EU')
@@ -74,14 +74,14 @@ RSpec.describe ProductPricer::Pricer do
     let(:pricer) do
       p = described_class.new
       p.add_rule(ProductPricer::Rules::DeliveryRule.new(
-        File.join(fixtures_dir, 'delivery.json')
-      ))
+                   File.join(fixtures_dir, 'delivery.json')
+                 ))
       p.add_rule(ProductPricer::Rules::TaxRule.new(
-        File.join(fixtures_dir, 'taxes.json')
-      ))
+                   File.join(fixtures_dir, 'taxes.json')
+                 ))
       p.add_rule(ProductPricer::Rules::PromoRule.new(
-        File.join(fixtures_dir, 'sales.json')
-      ))
+                   File.join(fixtures_dir, 'sales.json')
+                 ))
       p.add_rule(ProductPricer::Rules::RoundPriceRule.new)
       p
     end
@@ -129,7 +129,7 @@ RSpec.describe ProductPricer::Pricer do
 
       # Priority order: delivery(10) -> tax(100) -> promo(50) -> round(999)
       # But they're sorted, so: delivery(10) -> promo(50) -> tax(100) -> round(999)
-      expected_order = ['delivery', 'tax', 'round']
+      expected_order = %w[delivery tax round]
       expect(result.applied_rules).to eq(expected_order)
     end
 

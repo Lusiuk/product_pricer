@@ -15,22 +15,22 @@ RSpec.describe ProductPricer do
         result = described_class.calculate(product:, region: 'US')
 
         expect(result).to be_a(ProductPricer::CalculationContext)
-        expect(result.base_price).to eq(BigDecimal('100'))
-        expect(result.final_price).to eq(BigDecimal('100'))
+        expect(result.base_price).to eq(BigDecimal(100))
+        expect(result.final_price).to eq(BigDecimal(100))
       end
 
       it 'applies quantity multiplier' do
         result = described_class.calculate(product:, region: 'US', quantity: 3)
 
-        expect(result.base_price).to eq(BigDecimal('300'))
-        expect(result.final_price).to eq(BigDecimal('300'))
+        expect(result.base_price).to eq(BigDecimal(300))
+        expect(result.final_price).to eq(BigDecimal(300))
       end
 
       it 'accepts OpenStruct product' do
         openstruct_product = OpenStruct.new(price: 50, category: 'food')
         result = described_class.calculate(product: openstruct_product, region: 'US')
 
-        expect(result.base_price).to eq(BigDecimal('50'))
+        expect(result.base_price).to eq(BigDecimal(50))
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe ProductPricer do
         )
 
         expect(result.applied_rules).to include('delivery')
-        expect(result.final_price).to be > BigDecimal('100')
+        expect(result.final_price).to be > BigDecimal(100)
       end
 
       it 'applies tax rule' do
@@ -57,7 +57,7 @@ RSpec.describe ProductPricer do
 
         # EU tax on electronics is 20%
         expect(result.applied_rules).to include('tax')
-        expect(result.final_price).to eq(BigDecimal('120'))
+        expect(result.final_price).to eq(BigDecimal(120))
       end
 
       it 'applies promo rule' do
@@ -70,7 +70,7 @@ RSpec.describe ProductPricer do
         )
 
         expect(result.applied_rules).to include('promo:FLAT10')
-        expect(result.final_price).to eq(BigDecimal('90'))
+        expect(result.final_price).to eq(BigDecimal(90))
       end
     end
 
@@ -90,7 +90,7 @@ RSpec.describe ProductPricer do
 
         expect(result.applied_rules).to include('delivery', 'tax')
         # Base 100 + delivery ~10.87 + tax on 110.87 ~22.17 = ~133.04
-        expect(result.final_price).to be > BigDecimal('130')
+        expect(result.final_price).to be > BigDecimal(130)
       end
 
       it 'applies promo, delivery and tax together' do
@@ -123,7 +123,7 @@ RSpec.describe ProductPricer do
         result = described_class.calculate(product:, region: 'US', rules_config: config)
 
         expect(result.applied_rules).to include('tax')
-        expect(result.final_price).to eq(BigDecimal('110'))
+        expect(result.final_price).to eq(BigDecimal(110))
       end
     end
 
@@ -172,7 +172,7 @@ RSpec.describe ProductPricer do
       it 'raises InvalidConfigError if JSON is invalid' do
         # Create temp directory if it doesn't exist
         fixtures_dir = File.join(__dir__, 'fixtures')
-        Dir.mkdir(fixtures_dir) unless Dir.exist?(fixtures_dir)
+        FileUtils.mkdir_p(fixtures_dir)
 
         invalid_file = File.join(fixtures_dir, 'invalid_temp.json')
         File.write(invalid_file, '{invalid json}')
@@ -185,7 +185,7 @@ RSpec.describe ProductPricer do
           )
         end.to raise_error(ProductPricer::InvalidConfigError)
 
-        File.delete(invalid_file) if File.exist?(invalid_file)
+        FileUtils.rm_f(invalid_file)
       end
 
       it 'raises InvalidRuleError if rule name is unknown' do

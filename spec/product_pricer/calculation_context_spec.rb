@@ -83,11 +83,11 @@ RSpec.describe ProductPricer::CalculationContext do
     it 'allows setting base_price and final_price' do
       context = described_class.new(product:, region: 'EU')
 
-      context.base_price = BigDecimal('100')
-      context.final_price = BigDecimal('120')
+      context.base_price = BigDecimal(100)
+      context.final_price = BigDecimal(120)
 
-      expect(context.base_price).to eq(BigDecimal('100'))
-      expect(context.final_price).to eq(BigDecimal('120'))
+      expect(context.base_price).to eq(BigDecimal(100))
+      expect(context.final_price).to eq(BigDecimal(120))
     end
   end
 end
