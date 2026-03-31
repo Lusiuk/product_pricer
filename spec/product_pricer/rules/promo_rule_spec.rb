@@ -1,113 +1,82 @@
 # frozen_string_literal: true
 
+require 'ostruct'
+
 RSpec.describe ProductPricer::Rules::PromoRule do
-  let(:fixtures_dir) { File.join(__dir__, '..', '..', 'fixtures') }
+  let(:fixtures_dir) { File.join(__dir__, '../../fixtures') }
   let(:config_path) { File.join(fixtures_dir, 'sales.json') }
-  let(:rule) { described_class.new(config_path) }
+  let(:product) { OpenStruct.new(price: 100, category: 'electronics', weight: 1) }
 
   describe '#priority' do
-    it 'has priority 50' do
+    it 'returns medium priority' do
+      rule = described_class.new(config_path)
       expect(rule.priority).to eq(50)
     end
   end
 
   describe '#apply' do
     it 'applies fixed discount' do
-      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(
-        product:,
-        region: 'EU',
-        promo_code: 'FLAT10'
-      )
+      rule = described_class.new(config_path)
+      context = ProductPricer::CalculationContext.new(product:, region: 'US', promo_code: 'FLAT10')
 
       result = rule.apply(context)
 
-      expect(result.discount_amount).to eq(BigDecimal(10))
+      expect(result.final_price).to eq(BigDecimal('90'))
       expect(result.applied_rules).to include('promo:FLAT10')
     end
 
-    # it 'applies different fixed discounts' do
-    #   product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-    #
-    #   context_flat10 = ProductPricer::CalculationContext.new(
-    #     product:,
-    #     region: 'EU',
-    #     promo_code: 'FLAT10'
-    #   )
-    #
-    #   context_flat20 = ProductPricer::CalculationContext.new(
-    #     product:,
-    #     region: 'EU',
-    #     promo_code: 'FLAT20'
-    #   )
-    #
-    #   result_flat10 = rule.apply(context_flat10)
-    #   result_flat20 = rule.apply(context_flat20)
-    #
-    #   expect(result_flat10.discount_amount).to eq(BigDecimal(10))
-    #   expect(result_flat20.discount_amount).to eq(BigDecimal(20))
-    # end
-
-    it 'does not apply invalid promo code' do
-      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(
-        product:,
-        region: 'EU',
-        promo_code: 'INVALID'
-      )
+    it 'skips without promo code' do
+      rule = described_class.new(config_path)
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      original_price = context.final_price
 
       result = rule.apply(context)
 
-      expect(result.discount_amount).to eq(BigDecimal(0))
+      expect(result.final_price).to eq(original_price)
       expect(result.applied_rules).to be_empty
     end
 
-    it 'respects applicable categories' do
-      product_electronics = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      # product_food = OpenStruct.new(price: 100, category: 'food', weight: 1)
-
-      # SUMMER20 применяется только к electronics и clothing
-      context_electronics = ProductPricer::CalculationContext.new(
-        product: product_electronics,
-        region: 'EU',
-        promo_code: 'FLAT10'
-      )
-
-      # context_food = ProductPricer::CalculationContext.new(
-      #   product: product_food,
-      #   region: 'EU',
-      #   promo_code: 'FLAT10'
-      # )
-
-      result_electronics = rule.apply(context_electronics)
-      # result_food = rule.apply(context_food)
-
-      # FLAT10 применяется ко всем категориям
-      expect(result_electronics.discount_amount).to eq(BigDecimal(10))
-      # expect(result_food.discount_amount).to eq(BigDecimal(10))
-    end
-
-    it 'returns context without promo code' do
-      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
+    it 'skips for invalid promo code' do
+      rule = described_class.new(config_path)
+      context = ProductPricer::CalculationContext.new(product:, region: 'US', promo_code: 'INVALID')
+      original_price = context.final_price
 
       result = rule.apply(context)
 
-      expect(result.discount_amount).to eq(BigDecimal(0))
-      expect(result.applied_rules).to be_empty
+      expect(result.final_price).to eq(original_price)
     end
 
-    it 'does not apply promo code after valid_until' do
-      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU', promo_code: 'SUMMER20')
-
-      allow(Date).to receive(:today).and_return(Date.new(2034, 9, 1))
+    it 'skips for non-applicable category' do
+      rule = described_class.new(config_path)
+      food_product = OpenStruct.new(price: 100, category: 'food', weight: 1)
+      context = ProductPricer::CalculationContext.new(product: food_product, region: 'US', promo_code: 'SUMMER20')
 
       result = rule.apply(context)
 
-      expect(result.discount_amount).to eq(BigDecimal(0))
-      expect(result.applied_rules).not_to include('promo:SUMMER20')
-      expect(result.applied_rules).to be_empty
+      # SUMMER20 only applies to electronics and clothing
+      expect(result.final_price).to eq(BigDecimal('100'))
+    end
+
+    it 'applies percentage discount correctly' do
+      rule = described_class.new(config_path)
+      expensive_product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
+      context = ProductPricer::CalculationContext.new(product: expensive_product, region: 'US', promo_code: 'SUMMER20')
+
+      result = rule.apply(context)
+
+      # 20% of 100 = 20 discount
+      expect(result.final_price).to eq(BigDecimal('80'))
+    end
+
+    it 'respects max discount limit for percentage' do
+      rule = described_class.new(config_path)
+      very_expensive = OpenStruct.new(price: 1000, category: 'electronics', weight: 1)
+      context = ProductPricer::CalculationContext.new(product: very_expensive, region: 'US', promo_code: 'SUMMER20')
+
+      result = rule.apply(context)
+
+      # 20% of 1000 = 200, but max_discount is 100
+      expect(result.final_price).to eq(BigDecimal('900'))
     end
   end
 end

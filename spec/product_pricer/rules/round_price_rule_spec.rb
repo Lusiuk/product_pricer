@@ -1,53 +1,133 @@
 # frozen_string_literal: true
 
+require 'ostruct'
+
 RSpec.describe ProductPricer::Rules::RoundPriceRule do
-  let(:rule) { described_class.new }
+  let(:product) { OpenStruct.new(price: 100, category: 'electronics', weight: 1) }
 
   describe '#priority' do
-    it 'has priority 999 (last)' do
+    it 'returns highest priority (executed last)' do
+      rule = described_class.new
       expect(rule.priority).to eq(999)
     end
   end
 
   describe '#apply' do
-    it 'calculates and rounds final price' do
-      product = OpenStruct.new(price: 99.99, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
-
-      context.delivery_cost = BigDecimal('8.99')
-      context.tax_amount = BigDecimal('22.55')
-      context.discount_amount = BigDecimal(10)
+    it 'rounds final price to 2 decimal places' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('99.999')
 
       result = rule.apply(context)
 
-      # 99.99 + 8.99 + 22.55 - 10 = 121.53
-      expected = BigDecimal('121.53')
-      expect(result.final_price).to eq(expected)
+      expect(result.final_price).to eq(BigDecimal('100.00'))
     end
 
-    it 'rounds to 2 decimal places' do
-      product = OpenStruct.new(price: 100, category: 'food', weight: 1)
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
-
-      context.delivery_cost = BigDecimal('5.555')
-      context.tax_amount = BigDecimal('15.333')
-      context.discount_amount = BigDecimal(0)
+    it 'rounds down correctly' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('99.991')
 
       result = rule.apply(context)
 
-      # Проверяем что значение округлено до 2 знаков после запятой
-      # 100 + 5.555 + 15.333 = 120.888 -> 120.89
-      expect(result.final_price).to eq(BigDecimal('120.89'))
+      expect(result.final_price).to eq(BigDecimal('99.99'))
     end
 
-    it 'tracks round rule in applied_rules' do
-      product = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
+    it 'rounds up correctly' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('99.996')
+
+      result = rule.apply(context)
+
+      expect(result.final_price).to eq(BigDecimal('100.00'))
+    end
+
+    it 'tracks the rounding rule' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('99.999')
 
       result = rule.apply(context)
 
       expect(result.applied_rules).to include('round')
-      expect(result.breakdown).to have_key('round')
+      expect(result.breakdown['round']).to eq({ final_price: BigDecimal('100.00') })
+    end
+
+    it 'returns the context unchanged when price already rounded' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      original_price = BigDecimal('99.99')
+      context.final_price = original_price
+
+      result = rule.apply(context)
+
+      expect(result.final_price).to eq(original_price)
+    end
+
+    it 'handles very small prices' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('0.001')
+
+      result = rule.apply(context)
+
+      expect(result.final_price).to eq(BigDecimal('0.00'))
+    end
+
+    it 'handles large prices' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US')
+      context.final_price = BigDecimal('9999999.999')
+
+      result = rule.apply(context)
+
+      expect(result.final_price).to eq(BigDecimal('10000000.00'))
+    end
+
+    it 'preserves context object' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'US', promo_code: 'TEST')
+      context.final_price = BigDecimal('99.999')
+
+      result = rule.apply(context)
+
+      expect(result).to be(context)
+      expect(result.promo_code).to eq('TEST')
+    end
+
+    it 'is typically the last rule in execution chain' do
+      # This is more of a documentation test showing intended usage
+      rule = described_class.new
+      expect(rule.priority).to be > 100 # Higher than all other rules
+    end
+  end
+
+  describe 'integration with calculation flow' do
+    it 'rounds the final result after all other rules' do
+      product = OpenStruct.new(price: 99.99, category: 'electronics', weight: 2.5)
+      pricer = ProductPricer::Pricer.new
+
+      # Add all rules
+      fixtures_dir = File.join(__dir__, '../../fixtures')
+      pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
+        File.join(fixtures_dir, 'delivery.json')
+      ))
+      pricer.add_rule(ProductPricer::Rules::TaxRule.new(
+        File.join(fixtures_dir, 'taxes.json')
+      ))
+      pricer.add_rule(ProductPricer::Rules::RoundPriceRule.new)
+
+      result = pricer.calculate(product:, region: 'EU')
+
+      # Verify the price has been rounded to at most 2 decimal places
+      # by checking that multiplying by 100 gives an integer
+      shifted_price = result.final_price * 100
+      expect(shifted_price % 1).to eq(0)
+
+      # Also verify it's a valid number
+      expect(result.final_price).to be > 0
+      expect(result.applied_rules.last).to eq('round')
     end
   end
 end

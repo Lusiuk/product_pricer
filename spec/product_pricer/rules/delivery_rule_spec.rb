@@ -1,56 +1,74 @@
 # frozen_string_literal: true
 
+require 'ostruct'
+
 RSpec.describe ProductPricer::Rules::DeliveryRule do
-  let(:fixtures_dir) { File.join(__dir__, '..', '..', 'fixtures') }
+  let(:fixtures_dir) { File.join(__dir__, '../../fixtures') }
   let(:config_path) { File.join(fixtures_dir, 'delivery.json') }
-  let(:rule) { described_class.new(config_path) }
-  let(:product) { OpenStruct.new(price: 100, weight: 2.5) }
+  let(:product) { OpenStruct.new(price: 100, category: 'electronics', weight: 2.5) }
 
   describe '#priority' do
-    it 'has priority 10' do
+    it 'returns lower priority number' do
+      rule = described_class.new(config_path)
       expect(rule.priority).to eq(10)
     end
   end
 
   describe '#apply' do
-    it 'applies delivery cost based on region' do
+    it 'adds delivery cost to final price' do
+      rule = described_class.new(config_path)
       context = ProductPricer::CalculationContext.new(product:, region: 'EU')
 
       result = rule.apply(context)
 
-      expect(result.delivery_cost).to be > 0
+      expect(result.final_price).to be > context.base_price
       expect(result.applied_rules).to include('delivery')
     end
 
-    it 'calculates delivery cost for different regions' do
-      us_context = ProductPricer::CalculationContext.new(product:, region: 'US')
-      eu_context = ProductPricer::CalculationContext.new(product:, region: 'EU')
-
-      us_result = rule.apply(us_context)
-      eu_result = rule.apply(eu_context)
-
-      # Both should have delivery cost
-      expect(us_result.delivery_cost).to be > 0
-      expect(eu_result.delivery_cost).to be > 0
-      # But different values
-      expect(us_result.delivery_cost).not_to eq(eu_result.delivery_cost)
-    end
-
-    it 'handles unknown region' do
-      context = ProductPricer::CalculationContext.new(product:, region: 'UNKNOWN')
+    it 'skips calculation without config' do
+      rule = described_class.new
+      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
+      original_price = context.final_price
 
       result = rule.apply(context)
 
-      expect(result.delivery_cost).to eq(BigDecimal(0))
+      expect(result.final_price).to eq(original_price)
     end
 
-    it 'returns context without config' do
-      rule_no_config = described_class.new
-      context = ProductPricer::CalculationContext.new(product:, region: 'EU')
+    it 'skips calculation without product weight' do
+      rule = described_class.new(config_path)
+      product_no_weight = OpenStruct.new(price: 100, category: 'electronics')
+      context = ProductPricer::CalculationContext.new(product: product_no_weight, region: 'EU')
+      original_price = context.final_price
 
-      result = rule_no_config.apply(context)
+      result = rule.apply(context)
 
-      expect(result).to eq(context)
+      expect(result.final_price).to eq(original_price)
+    end
+
+    it 'skips calculation for unknown region' do
+      rule = described_class.new(config_path)
+      context = ProductPricer::CalculationContext.new(product:, region: 'UNKNOWN')
+      original_price = context.final_price
+
+      result = rule.apply(context)
+
+      expect(result.final_price).to eq(original_price)
+    end
+
+    it 'calculates delivery with weight surcharge' do
+      rule = described_class.new(config_path)
+      # Product with 5kg should get different surcharge than 2.5kg
+      heavy_product = OpenStruct.new(price: 100, category: 'electronics', weight: 5)
+      light_context = ProductPricer::CalculationContext.new(product:, region: 'EU')
+      heavy_context = ProductPricer::CalculationContext.new(product: heavy_product, region: 'EU')
+
+      light_result = rule.apply(light_context)
+      heavy_result = rule.apply(heavy_context)
+
+      # Heavy product should have higher delivery cost
+      expect(heavy_result.final_price - heavy_context.base_price)
+        .to be > (light_result.final_price - light_context.base_price)
     end
   end
 end

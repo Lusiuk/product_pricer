@@ -37,11 +37,30 @@ module ProductPricer
     configs = normalize_configs(rules_config)
 
     configs.map do |config|
-      rule_class = config['rule']
-      raise ProductPricer::InvalidConfigError, 'Rule name missing in config' unless rule_class
-      raise ProductPricer::InvalidRuleError, "Unknown rule: #{rule_class}" unless rule_class.is_a?(Rules::Base)
+      rule_class_name = config['rule']
+      raise ProductPricer::InvalidConfigError, 'Rule name missing in config' unless rule_class_name
+
+      # Преобразуем строку "Rules::DeliveryRule" в класс
+      rule_class = resolve_rule_class(rule_class_name)
+      raise ProductPricer::InvalidRuleError, "Unknown rule: #{rule_class_name}" unless rule_class
 
       rule_class.new(config)
+    end
+  end
+
+  def self.resolve_rule_class(rule_name)
+    # Преобразуем "Rules::DeliveryRule" в константу
+    case rule_name
+    when 'Rules::DeliveryRule'
+      Rules::DeliveryRule
+    when 'Rules::TaxRule'
+      Rules::TaxRule
+    when 'Rules::PromoRule'
+      Rules::PromoRule
+    when 'Rules::RoundPriceRule'
+      Rules::RoundPriceRule
+    else
+      nil
     end
   end
 
@@ -57,7 +76,7 @@ module ProductPricer
   def self.normalize_configs(rules_config)
     case rules_config
     when String
-      load_config_file(rules_config)
+      [load_config_file(rules_config)]
     when Array
       rules_config.map { |config| config.is_a?(String) ? load_config_file(config) : config }
     when Hash
