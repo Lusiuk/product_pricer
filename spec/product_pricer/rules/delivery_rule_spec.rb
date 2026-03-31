@@ -2,8 +2,12 @@
 
 RSpec.describe ProductPricer::Rules::DeliveryRule do
   let(:fixtures_dir) { File.join(__dir__, '..', '..', 'fixtures') }
+  let(:product) { instance_double(Product, price: 99.99, category: 'electronics', weight: 2.5) }
   let(:config_path) { File.join(fixtures_dir, 'delivery.json') }
-  let(:product) { double(price: 100, category: 'electronics', weight: 2.5) }
+
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
 
   describe '#priority' do
     it 'returns lower priority number' do
@@ -44,7 +48,7 @@ RSpec.describe ProductPricer::Rules::DeliveryRule do
 
     it 'skips calculation without product weight' do
       rule = described_class.new(config_path)
-      product_no_weight = double(price: 100, category: 'electronics')
+      product_no_weight = instance_double(Product, price: 100, category: 'electronics')
       allow(product_no_weight).to receive(:weight).and_return(nil)
       context = ProductPricer::CalculationContext.new(product: product_no_weight, region: 'EU')
       original_price = context.final_price
@@ -66,7 +70,7 @@ RSpec.describe ProductPricer::Rules::DeliveryRule do
 
     it 'calculates delivery with weight surcharge' do
       rule = described_class.new(config_path)
-      heavy_product = double(price: 100, category: 'electronics', weight: 5)
+      heavy_product = instance_double(Product, price: 100, category: 'electronics', weight: 5)
       light_context = ProductPricer::CalculationContext.new(product:, region: 'EU')
       heavy_context = ProductPricer::CalculationContext.new(product: heavy_product, region: 'EU')
 

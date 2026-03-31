@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-require 'ostruct'
-
 RSpec.describe ProductPricer::Rules::TaxRule do
   let(:fixtures_dir) { File.join(__dir__, '../../fixtures') }
+  let(:product) { instance_double(Product, price: 100, category: 'electronics', weight: 1) }
   let(:config_path) { File.join(fixtures_dir, 'taxes.json') }
-  let(:product) { OpenStruct.new(price: 100, category: 'electronics', weight: 1) }
+
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
 
   describe '#priority' do
     it 'returns higher priority for tax calculation' do
@@ -34,14 +36,13 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       eu_result = rule.apply(eu_context)
       us_result = rule.apply(us_context)
 
-      # EU has 20% tax, US has 0%
       expect(eu_result.final_price).to eq(BigDecimal(120))
       expect(us_result.final_price).to eq(BigDecimal(100))
     end
 
     it 'skips calculation without category' do
       rule = described_class.new(config_path)
-      product_no_category = OpenStruct.new(price: 100, weight: 1)
+      product_no_category = instance_double(Product, price: 100, category: nil, weight: 1)
       context = ProductPricer::CalculationContext.new(product: product_no_category, region: 'EU')
       original_price = context.final_price
 
@@ -52,7 +53,7 @@ RSpec.describe ProductPricer::Rules::TaxRule do
 
     it 'skips calculation for unknown category' do
       rule = described_class.new(config_path)
-      product_unknown = OpenStruct.new(price: 100, category: 'unknown_category', weight: 1)
+      product_unknown = instance_double(Product, price: 100, category: 'unknown_category', weight: 1)
       context = ProductPricer::CalculationContext.new(product: product_unknown, region: 'EU')
       original_price = context.final_price
 
@@ -63,8 +64,8 @@ RSpec.describe ProductPricer::Rules::TaxRule do
 
     it 'applies different tax rates for different categories' do
       rule = described_class.new(config_path)
-      electronics = OpenStruct.new(price: 100, category: 'electronics', weight: 1)
-      food = OpenStruct.new(price: 100, category: 'food', weight: 1)
+      electronics = instance_double(Product, price: 100, category: 'electronics', weight: 1)
+      food = instance_double(Product, price: 100, category: 'food', weight: 1)
 
       elec_context = ProductPricer::CalculationContext.new(product: electronics, region: 'EU')
       food_context = ProductPricer::CalculationContext.new(product: food, region: 'EU')
@@ -72,7 +73,6 @@ RSpec.describe ProductPricer::Rules::TaxRule do
       elec_result = rule.apply(elec_context)
       food_result = rule.apply(food_context)
 
-      # Electronics: 20%, Food: 5%
       expect(elec_result.final_price).to eq(BigDecimal(120))
       expect(food_result.final_price).to eq(BigDecimal(105))
     end

@@ -43,3 +43,6 @@ RSpec/MultipleExpectations:
 
 RSpec/ExampleLength:
   Max: 15 # Разрешить тесты до 15 строк
+
+RSpec/FactoryBot/CreateList:
+  Enabled: false

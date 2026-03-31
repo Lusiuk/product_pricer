@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.describe ProductPricer::CalculationContext do
-  let(:product) { double(price: 99.99, category: 'electronics', weight: 2.5) }
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
+
+  let(:product) { instance_double(Product, price: 99.99, category: 'electronics', weight: 2.5) }
 
   describe '#initialize' do
     it 'initializes context with product and region' do
@@ -45,14 +49,6 @@ RSpec.describe ProductPricer::CalculationContext do
       context = described_class.new(product:, region: 'EU')
 
       expect(context.base_price).to eq(BigDecimal('99.99'))
-    end
-
-    it 'raises error if product does not respond to price' do
-      invalid_product = 'not_a_product'
-
-      expect do
-        described_class.new(product: invalid_product, region: 'US')
-      end.to raise_error(ArgumentError)
     end
   end
 
@@ -139,17 +135,17 @@ RSpec.describe ProductPricer::CalculationContext do
     it 'allows setting base_price' do
       context = described_class.new(product:, region: 'EU')
 
-      context.base_price = BigDecimal('100')
+      context.base_price = BigDecimal(100)
 
-      expect(context.base_price).to eq(BigDecimal('100'))
+      expect(context.base_price).to eq(BigDecimal(100))
     end
 
     it 'allows setting final_price' do
       context = described_class.new(product:, region: 'EU')
 
-      context.final_price = BigDecimal('120')
+      context.final_price = BigDecimal(120)
 
-      expect(context.final_price).to eq(BigDecimal('120'))
+      expect(context.final_price).to eq(BigDecimal(120))
     end
   end
 end

@@ -4,44 +4,48 @@ require 'ostruct'
 require 'fileutils'
 
 RSpec.describe ProductPricer do
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
+
   it 'has a version number' do
     expect(ProductPricer::VERSION).not_to be nil
   end
 
   describe '.calculate' do
-    let(:product) { double(price: 100, category: 'electronics', weight: 1) }
+    let(:product) { instance_double(Product, price: 100, category: 'electronics', weight: 1) }
 
     context 'when without rules' do
       it 'returns context with base price as final price' do
         result = described_class.calculate(product:, region: 'US')
 
         expect(result).to be_a(ProductPricer::CalculationContext)
-        expect(result.base_price).to eq(BigDecimal('100'))
+        expect(result.base_price).to eq(BigDecimal(100))
       end
 
       it 'sets final price equal to base price' do
         result = described_class.calculate(product:, region: 'US')
 
-        expect(result.final_price).to eq(BigDecimal('100'))
+        expect(result.final_price).to eq(BigDecimal(100))
       end
 
       it 'applies quantity multiplier' do
         result = described_class.calculate(product:, region: 'US', quantity: 3)
 
-        expect(result.base_price).to eq(BigDecimal('300'))
+        expect(result.base_price).to eq(BigDecimal(300))
       end
 
       it 'multiplies final price by quantity' do
         result = described_class.calculate(product:, region: 'US', quantity: 3)
 
-        expect(result.final_price).to eq(BigDecimal('300'))
+        expect(result.final_price).to eq(BigDecimal(300))
       end
 
       it 'accepts double product' do
-        double_product = double(price: 50, category: 'food')
+        double_product = instance_double(Product, price: 50, category: 'food')
         result = described_class.calculate(product: double_product, region: 'US')
 
-        expect(result.base_price).to eq(BigDecimal('50'))
+        expect(result.base_price).to eq(BigDecimal(50))
       end
     end
 
@@ -50,7 +54,7 @@ RSpec.describe ProductPricer do
 
       it 'applies delivery rule' do
         delivery_config = File.join(fixtures_dir, 'delivery.json')
-        product_with_weight = double(price: 100, category: 'electronics', weight: 2.5)
+        product_with_weight = instance_double(Product, price: 100, category: 'electronics', weight: 2.5)
 
         result = described_class.calculate(
           product: product_with_weight,
@@ -63,7 +67,7 @@ RSpec.describe ProductPricer do
 
       it 'increases price with delivery rule' do
         delivery_config = File.join(fixtures_dir, 'delivery.json')
-        product_with_weight = double(price: 100, category: 'electronics', weight: 2.5)
+        product_with_weight = instance_double(Product, price: 100, category: 'electronics', weight: 2.5)
 
         result = described_class.calculate(
           product: product_with_weight,
@@ -71,7 +75,7 @@ RSpec.describe ProductPricer do
           rules_config: delivery_config
         )
 
-        expect(result.final_price).to be > BigDecimal('100')
+        expect(result.final_price).to be > BigDecimal(100)
       end
 
       it 'applies tax rule' do
@@ -86,7 +90,7 @@ RSpec.describe ProductPricer do
         result = described_class.calculate(product:, region: 'EU', rules_config: tax_config)
 
         # EU tax on electronics is 20%
-        expect(result.final_price).to eq(BigDecimal('120'))
+        expect(result.final_price).to eq(BigDecimal(120))
       end
 
       it 'applies promo rule' do
@@ -110,7 +114,7 @@ RSpec.describe ProductPricer do
           rules_config: promo_config
         )
 
-        expect(result.final_price).to eq(BigDecimal('90'))
+        expect(result.final_price).to eq(BigDecimal(90))
       end
     end
 
@@ -118,7 +122,7 @@ RSpec.describe ProductPricer do
       let(:fixtures_dir) { File.join(__dir__, 'fixtures') }
 
       it 'applies all rules in priority order' do
-        product_full = double(price: 100, category: 'electronics', weight: 2.5)
+        product_full = instance_double(Product, price: 100, category: 'electronics', weight: 2.5)
         delivery_config = File.join(fixtures_dir, 'delivery.json')
         tax_config = File.join(fixtures_dir, 'taxes.json')
 
@@ -132,7 +136,7 @@ RSpec.describe ProductPricer do
       end
 
       it 'calculates correct price with multiple rules' do
-        product_full = double(price: 100, category: 'electronics', weight: 2.5)
+        product_full = instance_double(Product, price: 100, category: 'electronics', weight: 2.5)
         delivery_config = File.join(fixtures_dir, 'delivery.json')
         tax_config = File.join(fixtures_dir, 'taxes.json')
 
@@ -143,11 +147,11 @@ RSpec.describe ProductPricer do
         )
 
         # Base 100 + delivery ~10.87 + tax on 110.87 ~22.17 = ~133.04
-        expect(result.final_price).to be > BigDecimal('130')
+        expect(result.final_price).to be > BigDecimal(130)
       end
 
       it 'applies promo, delivery and tax together' do
-        product_full = double(price: 100, category: 'electronics', weight: 2.5)
+        product_full = instance_double(Product, price: 100, category: 'electronics', weight: 2.5)
         delivery_config = File.join(fixtures_dir, 'delivery.json')
         tax_config = File.join(fixtures_dir, 'taxes.json')
         promo_config = File.join(fixtures_dir, 'sales.json')
@@ -189,7 +193,7 @@ RSpec.describe ProductPricer do
 
         result = described_class.calculate(product:, region: 'US', rules_config: config)
 
-        expect(result.final_price).to eq(BigDecimal('110'))
+        expect(result.final_price).to eq(BigDecimal(110))
       end
     end
 
@@ -201,7 +205,7 @@ RSpec.describe ProductPricer do
       end
 
       it 'raises InvalidProductPriceError if product has no price' do
-        invalid_product = double(category: 'electronics')
+        invalid_product = instance_double(Product, category: 'electronics')
         allow(invalid_product).to receive(:respond_to?).with(:price).and_return(false)
 
         expect do

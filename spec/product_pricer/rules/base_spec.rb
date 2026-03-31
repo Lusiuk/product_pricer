@@ -3,6 +3,10 @@
 require 'fileutils'
 
 RSpec.describe ProductPricer::Rules::Base do
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
+
   describe '#initialize' do
     it 'initializes with config from hash' do
       config = { 'key' => 'value' }
@@ -79,7 +83,7 @@ RSpec.describe ProductPricer::Rules::Base do
   describe '#apply' do
     it 'raises NotImplementedError' do
       rule = described_class.new
-      product = double(price: 100)
+      product = instance_double(Product, price: 100)
       context = ProductPricer::CalculationContext.new(
         product:,
         region: 'US'

@@ -2,13 +2,17 @@
 
 RSpec.describe ProductPricer::Pricer do
   let(:fixtures_dir) { File.join(__dir__, '..', 'fixtures') }
-  let(:product) { double(price: 99.99, category: 'electronics', weight: 2.5) }
+  let(:product) { instance_double(Product, price: 99.99, category: 'electronics', weight: 2.5) }
+
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
 
   describe '#initialize' do
     it 'creates pricer with empty rules' do
       pricer = described_class.new
 
-      expect(pricer).to be_a(ProductPricer::Pricer)
+      expect(pricer).to be_a(described_class)
     end
   end
 
@@ -61,8 +65,8 @@ RSpec.describe ProductPricer::Pricer do
     it 'removes rule by class' do
       pricer = described_class.new
       pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
-        File.join(fixtures_dir, 'delivery.json')
-      ))
+                        File.join(fixtures_dir, 'delivery.json')
+                      ))
 
       pricer.remove_rule(ProductPricer::Rules::DeliveryRule)
       result = pricer.calculate(product:, region: 'EU')
@@ -75,14 +79,14 @@ RSpec.describe ProductPricer::Pricer do
     let(:pricer) do
       p = described_class.new
       p.add_rule(ProductPricer::Rules::DeliveryRule.new(
-        File.join(fixtures_dir, 'delivery.json')
-      ))
+                   File.join(fixtures_dir, 'delivery.json')
+                 ))
       p.add_rule(ProductPricer::Rules::TaxRule.new(
-        File.join(fixtures_dir, 'taxes.json')
-      ))
+                   File.join(fixtures_dir, 'taxes.json')
+                 ))
       p.add_rule(ProductPricer::Rules::PromoRule.new(
-        File.join(fixtures_dir, 'sales.json')
-      ))
+                   File.join(fixtures_dir, 'sales.json')
+                 ))
       p.add_rule(ProductPricer::Rules::RoundPriceRule.new)
       p
     end
@@ -145,8 +149,6 @@ RSpec.describe ProductPricer::Pricer do
     it 'applies rules in correct priority order' do
       result = pricer.calculate(product:, region: 'EU')
 
-      # Priority order: delivery(10) -> tax(100) -> promo(50) -> round(999)
-      # But they're sorted, so: delivery(10) -> promo(50) -> tax(100) -> round(999)
       expect(result.applied_rules[0]).to eq('delivery')
     end
 
@@ -157,7 +159,7 @@ RSpec.describe ProductPricer::Pricer do
     end
 
     it 'raises error with missing price' do
-      invalid_product = double(category: 'electronics')
+      invalid_product = instance_double(Product, category: 'electronics')
       allow(invalid_product).to receive(:respond_to?).with(:price).and_return(false)
 
       expect do

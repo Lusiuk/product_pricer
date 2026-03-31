@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-require 'ostruct'
-
 RSpec.describe ProductPricer::Rules::RoundPriceRule do
-  let(:product) { OpenStruct.new(price: 100, category: 'electronics', weight: 1) }
+  before do
+    stub_const('Product', Struct.new(:price, :category, :weight))
+  end
+
+  let(:product) { instance_double(Product, price: 100, category: 'electronics', weight: 1) }
 
   describe '#priority' do
     it 'returns highest priority (executed last)' do
@@ -97,18 +99,16 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
     end
 
     it 'is typically the last rule in execution chain' do
-      # This is more of a documentation test showing intended usage
       rule = described_class.new
-      expect(rule.priority).to be > 100 # Higher than all other rules
+      expect(rule.priority).to be > 100
     end
   end
 
   describe 'integration with calculation flow' do
     it 'rounds the final result after all other rules' do
-      product = OpenStruct.new(price: 99.99, category: 'electronics', weight: 2.5)
+      product = instance_double(Product, price: 99.99, category: 'electronics', weight: 2.5)
       pricer = ProductPricer::Pricer.new
 
-      # Add all rules
       fixtures_dir = File.join(__dir__, '../../fixtures')
       pricer.add_rule(ProductPricer::Rules::DeliveryRule.new(
                         File.join(fixtures_dir, 'delivery.json')
@@ -120,12 +120,8 @@ RSpec.describe ProductPricer::Rules::RoundPriceRule do
 
       result = pricer.calculate(product:, region: 'EU')
 
-      # Verify the price has been rounded to at most 2 decimal places
-      # by checking that multiplying by 100 gives an integer
       shifted_price = result.final_price * 100
       expect(shifted_price % 1).to eq(0)
-
-      # Also verify it's a valid number
       expect(result.final_price).to be > 0
       expect(result.applied_rules.last).to eq('round')
     end
